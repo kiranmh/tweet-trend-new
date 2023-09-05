@@ -8,7 +8,11 @@ resource "aws_instance" "demo-server" {
     key_name = "devops"
     // security_groups = [ "demo-sg" ]
     vpc_security_group_ids = [ aws_security_group.demo-sg.id ]
-    subnet_id = aws_subnet.demo-public-subnet-01
+    subnet_id = aws_subnet.demo-public-subnet-01.id
+    for_each = toset(["jenkins_master", "jenkins_slave", "ansible_server"])
+    tags = {
+        Name = "${each.key}"
+    }
 
   
 }
@@ -73,16 +77,15 @@ resource "aws_subnet" "demo-public-subnet-02" {
 }
 
 resource "aws_internet_gateway" "demo-igw" {
-  
-  vpc_id = aws_vpc.demo-vpc.id
-  tags {
-    Name = "demo-igw"
+   vpc_id = aws_vpc.demo-vpc.id
+   tags = {
+    name = "demo-igw" 
   }
 }
 
 resource "aws_route_table" "demo-rt" {
     vpc_id = aws_vpc.demo-vpc.id
-    route = {
+    route  {
         cidr_block = "0.0.0.0/0"
         gateway_id = aws_internet_gateway.demo-igw.id
 
